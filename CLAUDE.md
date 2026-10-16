@@ -13,6 +13,7 @@ python3 tools/inkscreenedit.py        # pixel editor, http://127.0.0.1:8765/
 python3 tools/test_mkinkscreen.py     # generator checks
 uv run --with fonttools --with skia-pathops python -I tools/test_bdf2ttf.py  # TTF == BDF
 tools/dist.sh                         # build/inkscreen-VERSION.zip
+python3 tools/mkcompare.py docs/inkscreen-vs-unifont.png  # hand-tuned vs Unifont
 uvx ruff format tools/*.py && uvx ruff check tools/*.py
 ```
 
@@ -27,9 +28,12 @@ python3 tools/inkscreenedit.py --ref $R/screen.r.14.bdf --refb $R/screen.b.14.bd
 
 ## Inkscreen
 
-GNU Unifont's Latin redrawn to a 14-row design after SunOS screen.r.14
-(ink rows 10..-3, x-height 7, descenders 3) in an 8x16 cell (ascent
-12, descent 4). Covers ASCII and Latin-1. `VERSION` in
+Based on GNU Unifont: its 16-row Latin glyphs fitted into 14 rows
+(ink rows 10..-3, x-height 8 -> 7, descenders 2 -> 3) in the same
+8x16 cell (ascent 12, descent 4), with some details changed by hand.
+Covers ASCII and Latin-1. Public text (README, package README) says
+exactly that: based on Unifont, 16 -> 14 rows, some details changed;
+never "redrawn" or a nod to old workstations. `VERSION` in
 `mkinkscreen.py` goes into the BDF (`FONT_VERSION`) and the TTF name
 table; bump it for each release.
 
@@ -42,6 +46,8 @@ table; bump it for each release.
   (11..-3); comments start with `;` since rows may start with `#`.
 - Gap rule: column x 0 stays empty in every glyph. Regular is 8 wide,
   bold 9 (like screen.b.14). `mkinkscreen.py` reports violations.
+- After hand edits, regenerate `docs/inkscreen-vs-unifont.png`
+  (the README shows it).
 - Licensing: a Unifont derivative under OFL 1.1; ship `fonts/OFL.txt`
   and never call it Unifont. No Reserved Font Name, so anyone may
   convert it (BDF -> PCF/TTF) without renaming. screen.r.14 is a visual

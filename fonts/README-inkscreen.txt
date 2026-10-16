@@ -3,10 +3,11 @@ Inkscreen 14
 
 A bitmap screen font from Caffeine Type Foundry, in Regular and Bold.
 
-Inkscreen is drawn on a 14-row design (cap height 10, x-height 7,
-descenders 3) inside an 8x16 cell. Regular is 8 pixels wide, Bold 9.
-Every glyph leaves its left column empty, so letters never touch.
-It covers ASCII and Latin-1 (U+0020-U+007E, U+00A0-U+00FF).
+Inkscreen is based on GNU Unifont. It fits Unifont's 16-row Latin
+glyphs into 14 rows (x-height 8 -> 7 rows, descenders 2 -> 3) in the
+same 8x16 cell, and changes some details by hand. Regular is 8 pixels
+wide, Bold 9, so letters never touch. It covers ASCII and Latin-1
+(U+0020-U+007E, U+00A0-U+00FF).
 
 Files
 
@@ -18,8 +19,6 @@ Files
 
 The TTF files draw each pixel as a square. They are sharp only at
 16 px or an integer multiple (32, 48, ...); other sizes blur.
-
-Inkscreen is based on GNU Unifont, whose Latin glyphs were redrawn.
 
 License
 
