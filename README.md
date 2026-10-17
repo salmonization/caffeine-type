@@ -1,6 +1,6 @@
 # Caffeine Type
 
-Bitmap fonts from Caffeine Type Foundry, and the tools that build them.
+Fonts from Caffeine Type Foundry, and the tools that build them.
 
 ## Inkscreen 14
 
@@ -22,10 +22,26 @@ The glyphs changed by hand, next to Unifont:
 - `tools/bdf2ttf.py` - BDF to pixel-outline TrueType
 - `tools/mkcompare.py` - the overview image above
 
-Release packages (BDF, TTF, license) come from `tools/dist.sh`.
+## Inksans CJK
+
+A sans-serif font for Chinese, Japanese and Korean in Regular and
+Bold: Noto Sans CJK at two fixed weights (Noto's 340 and 590, a little
+lighter than its own Regular and Bold) with Latin, Greek and Cyrillic
+from Inter. Each weight is one font collection with five regional
+faces: JP, KR, SC, TC, HK.
+
+- `tools/mkinksans.py` - builds `build/InksansCJK-{Regular,Bold}.ttc`
+  from the variable Noto Sans CJK and Inter (downloaded and checked on
+  first run)
+
+## Releases
+
+`tools/dist.sh inkscreen` or `tools/dist.sh inksans` writes a release
+package to `build/`.
 
 ## License
 
 The fonts are licensed under the SIL Open Font License 1.1
-([fonts/OFL.txt](fonts/OFL.txt)). The tools are BSD-2-Clause
+([fonts/OFL.txt](fonts/OFL.txt) for Inkscreen,
+[fonts/OFL-inksans.txt](fonts/OFL-inksans.txt) for Inksans CJK). The tools are BSD-2-Clause
 ([LICENSE](LICENSE)).
