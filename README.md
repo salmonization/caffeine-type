@@ -30,12 +30,17 @@ lighter than its own Regular and Bold) with Latin, Greek and Cyrillic
 from Inter. Each weight is one font collection with five regional
 faces: JP, KR, SC, TC, HK.
 
+![Inksans CJK Regular and Bold](docs/inksans-preview.svg)
+
 - `tools/mkinksans.py` - builds `build/InksansCJK-{Regular,Bold}.ttc`
   from the variable Noto Sans CJK and Inter (downloaded and checked on
   first run)
+- `tools/mkpreview.py` - the preview image above
 
 ## Releases
 
+Downloads are on [GitHub Releases](https://github.com/salmonization/caffeine-type/releases);
+try the fonts at [type.caffeine.ink](https://type.caffeine.ink).
 `tools/dist.sh inkscreen` or `tools/dist.sh inksans` writes a release
 package to `build/`.
 

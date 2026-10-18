@@ -16,6 +16,9 @@ tools/dist.sh inkscreen               # build/inkscreen-VERSION.zip
 uv run --with fonttools --with skia-pathops python -I tools/mkinksans.py  # build/InksansCJK-*.ttc, ~3 min
 uv run --with fonttools --with skia-pathops python -I tools/test_mkinksans.py  # checks the OTCs
 tools/dist.sh inksans                 # build/inksans-VERSION.zip
+uv run --with fonttools python -I tools/mkpreview.py      # docs/inksans-preview.svg
+uv run --with fonttools --with skia-pathops python -I tools/mksite.py  # site/fonts/ for the web
+npx wrangler pages deploy site --project-name caffeine-type          # publish type.caffeine.ink
 python3 tools/mkcompare.py docs/inkscreen-vs-unifont.png  # hand-tuned vs Unifont
 uvx ruff format tools/*.py && uvx ruff check tools/*.py
 ```
@@ -102,6 +105,25 @@ SHA-256 in `mkinksans.py` and downloaded to `fonts/src/{noto,inter}/`
 - Names: `Inksans CJK <region>`, PostScript `InksansCJK<region>-<style>`,
   vendor `NONE`; "Noto", "Source", "Inter" only in the copyright and
   designer credits.
+
+## type.caffeine.ink
+
+`site/index.html` (static, no build step) plus `site/fonts/` from
+`tools/mksite.py` (git-ignored, 190 slices / 209 MB). Cloudflare Pages
+by direct upload from a local build, not git integration, since the
+fonts are not committed. Download buttons point at GitHub Releases
+`<family>-<VERSION>/<family>-<VERSION>.zip`; `site/fonts/versions.js`
+carries the versions, so bump `VERSION`, release, rebuild, deploy.
+
+- Inksans slices: rare (2000 code points, one contiguous range each)
+  declared first, then one common slice (GB 2312 L1, Big5 frequent,
+  JIS L1, KS X 1001 Hangul; range = its whole span), then base (Latin,
+  symbols, kana, CJK punctuation). Browsers try overlapping faces last
+  declared first and fall back on a missing glyph, so ordinary text
+  costs two downloads and the CSS stays ~30 KB. Exact per-code-point
+  ranges made fonts.css 1.5 MB.
+- Slices are TTF (WOFF2 would need brotli; Cloudflare compresses TTF).
+  Paths carry the version, so `_headers` caches them as immutable.
 
 Plan 9 bitmap fonts are not all MIT: `luc`, `lucm`, `lucsans`, `pelm`
 are B&H (no derivatives); only `misc`/`fixed` (X11) are free.

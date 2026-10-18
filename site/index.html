@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Caffeine Type</title>
+<meta name="description" content="Fonts from Caffeine Type Foundry: Inksans CJK and Inkscreen 14. Try them and download.">
+<link rel="stylesheet" href="fonts/fonts.css">
+<script src="fonts/versions.js"></script>
+<style>
+  :root { --fg: #222; --dim: #666; --faint: #999; --line: #ddd; --bg: #fff; --field: #fff; --accent: #2f7cf6; }
+  @media (prefers-color-scheme: dark) {
+    :root { --fg: #e6e6e6; --dim: #aaa; --faint: #777; --line: #3a3a3a; --bg: #161616; --field: #1e1e1e; --accent: #2f7cf6; }
+  }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  body { font: 14px/1.4 -apple-system, BlinkMacSystemFont, sans-serif; margin: 0; color: var(--fg);
+         background: var(--bg); }
+  main { max-width: 960px; margin: 0 auto; padding: 24px 16px 48px; }
+  h1 { font-size: 20px; margin: 0 0 2px; }
+  h2 { font-size: 13px; margin: 28px 0 8px; color: var(--dim); font-weight: 600; }
+  p { margin: 0 0 8px; }
+  .dim { color: var(--dim); }
+  .row { display: flex; gap: 8px 16px; flex-wrap: wrap; align-items: center; margin: 8px 0; }
+  label { display: inline-flex; gap: 6px; align-items: center; }
+  select, input, textarea, button { font: inherit; color: var(--fg); background: var(--field);
+                                    border: 1px solid var(--line); border-radius: 4px; }
+  select, button { padding: 3px 8px; }
+  textarea { width: 100%; padding: 8px; resize: vertical; }
+  input[type=range] { width: 160px; padding: 0; border: 0; background: none; }
+  #preview { border: 1px solid var(--line); border-radius: 4px; padding: 16px; margin-top: 10px;
+             min-height: 120px; white-space: pre-wrap; overflow-wrap: anywhere; line-height: 1.6; }
+  #preview.pixel { line-height: 1.5; -webkit-font-smoothing: none; font-smooth: never; }
+  .note { font-size: 12px; color: var(--faint); margin-top: 6px; }
+  .fonts { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
+  .card { border: 1px solid var(--line); border-radius: 4px; padding: 14px 16px; }
+  .card h3 { font-size: 16px; margin: 0 0 6px; }
+  .card .specimen { font-size: 24px; margin: 6px 0 10px; line-height: 1.4; }
+  .card ul { margin: 6px 0 12px; padding-left: 18px; color: var(--dim); }
+  .card code { font: 12px ui-monospace, monospace; }
+  a.button { display: inline-block; padding: 5px 12px; border-radius: 4px; text-decoration: none;
+             background: var(--accent); color: #fff; }
+  footer { margin-top: 32px; font-size: 12px; color: var(--faint); }
+  footer a, .card a:not(.button) { color: inherit; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Caffeine Type</h1>
+  <p class="dim">Free under the SIL Open Font License.</p>
+
+  <h2>Try</h2>
+  <div class="row">
+    <label>Font
+      <select id="font">
+        <option value="inkscreen">Inkscreen 14</option>
+        <option value="inksans">Inksans CJK</option>
+      </select>
+    </label>
+    <label id="region-box">Region
+      <select id="region">
+        <option value="SC" data-lang="zh-Hans">SC, Simplified Chinese</option>
+        <option value="TC" data-lang="zh-Hant-TW">TC, Traditional Chinese</option>
+        <option value="HK" data-lang="zh-Hant-HK">HK, Hong Kong</option>
+        <option value="JP" data-lang="ja">JP, Japanese</option>
+        <option value="KR" data-lang="ko">KR, Korean</option>
+      </select>
+    </label>
+    <label>Weight
+      <select id="weight">
+        <option value="400">Regular</option>
+        <option value="700">Bold</option>
+      </select>
+    </label>
+    <label>Size
+      <input id="size" type="range">
+      <span id="size-out"></span>
+    </label>
+  </div>
+  <textarea id="text" rows="4" spellcheck="false"></textarea>
+  <div id="preview"></div>
+  <p class="note" id="note"></p>
+
+  <h2>Download</h2>
+  <div class="fonts">
+    <section class="card">
+      <h3>Inkscreen 14</h3>
+      <div class="specimen" style="font-family: Inkscreen; font-size: 32px">Hamburgefonstiv</div>
+      <p>A bitmap screen font in Regular and Bold, based on GNU Unifont. Its Latin fitted into
+        14 rows of an 8x16 cell. Certain glyph details have been hand-refined. Sharp at 16 px and multiples.</p>
+      <ul>
+        <li><code>inkscreen14.bdf</code>, <code>inkscreen14b.bdf</code></li>
+        <li><code>inkscreen14.ttf</code>, <code>inkscreen14b.ttf</code></li>
+        <li><code>OFL.txt</code>, <code>README.txt</code></li>
+      </ul>
+      <a class="button" data-family="inkscreen">Download</a>
+    </section>
+    <section class="card">
+      <h3>Inksans CJK</h3>
+      <div class="specimen" style="font-family: 'Inksans CJK SC'" lang="zh-Hans">永 Aa 字体 かな</div>
+      <p>A sans-serif for Chinese, Japanese and Korean, in Regular and Bold. Noto Sans CJK at two
+        fixed weights (340 & 590) with Latin, Greek and Cyrillic from Inter.</p>
+      <ul>
+        <li><code>InksansCJK-Regular.ttc</code></li>
+        <li><code>InksansCJK-Bold.ttc</code></li>
+        <li><code>OFL.txt</code>, <code>README.txt</code></li>
+      </ul>
+      <a class="button" data-family="inksans">Download</a>
+    </section>
+  </div>
+
+  <footer>
+    Source and all releases:
+    <a href="https://github.com/salmonization/caffeine-type">salmonization/caffeine-type</a>
+  </footer>
+</main>
+<script>
+  const RELEASES = "https://github.com/salmonization/caffeine-type/releases/download";
+  const $ = (id) => document.getElementById(id);
+  const preview = $("preview");
+
+  // each font's own sample: Inkscreen has no CJK
+  const SAMPLES = {
+    inksans: `We shall meet in the place where there is no darkness.
+まつすぐな道でさみしい。
+我们终将迷失在大雾里，互相呼唤，在不同的地点，成为无用的路标。
+我們終將迷失在大霧裡，互相呼喚，在不同的地點，成為無用的路標。`,
+    inkscreen: `We shall meet in the place where there is no darkness.
+The quick brown fox jumps over the lazy dog. 0123456789
+Ærøskøbing · Größe · déjà vu · ¿Qué pasó? · «Ça va?»
+sun3% ls -l /usr/bin | grep cc`,
+  };
+
+  // Inkscreen is drawn on a 16 px grid: only multiples stay sharp
+  const SIZES = {
+    inksans: { min: 12, max: 96, step: 1, value: 16 },
+    inkscreen: { min: 16, max: 64, step: 16, value: 16 },
+  };
+
+  function setFont(keepSize) {
+    const font = $("font").value;
+    const s = SIZES[font];
+    Object.assign($("size"), { min: s.min, max: s.max, step: s.step });
+    if (!keepSize) $("size").value = s.value;
+    // swap the sample unless the visitor has typed their own
+    if (Object.values(SAMPLES).includes($("text").value) || !$("text").value)
+      $("text").value = SAMPLES[font];
+    $("region-box").hidden = font !== "inksans";
+    update();
+  }
+
+  function update() {
+    const font = $("font").value;
+    const region = $("region").selectedOptions[0];
+    preview.style.fontFamily = font === "inksans" ? `"Inksans CJK ${region.value}"` : "Inkscreen";
+    preview.lang = font === "inksans" ? region.dataset.lang : "en";
+    preview.style.fontWeight = $("weight").value;
+    preview.style.fontSize = `${$("size").value}px`;
+    preview.classList.toggle("pixel", font === "inkscreen");
+    preview.textContent = $("text").value;
+    $("size-out").textContent = `${$("size").value} px`;
+    $("note").textContent = font === "inksans"
+      ? "Characters load in slices as you type. The region picks the regional forms of the ideographs."
+      : "Inkscreen only supports ASCII and Latin-1. So other characters will fall back to your system fonts.";
+  }
+
+  for (const a of document.querySelectorAll("a[data-family]")) {
+    const family = a.dataset.family;
+    const version = window.VERSIONS?.[family];
+    a.href = `${RELEASES}/${family}-${version}/${family}-${version}.zip`;
+    a.textContent = `Download ${version} (zip)`;
+  }
+  $("font").onchange = () => setFont(false);
+  for (const id of ["region", "weight", "size", "text"]) $(id).oninput = update;
+  setFont(false);
+</script>
+</body>
+</html>
