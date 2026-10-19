@@ -13,12 +13,12 @@ python3 tools/inkscreenedit.py        # pixel editor, http://127.0.0.1:8765/
 python3 tools/test_mkinkscreen.py     # generator checks
 uv run --with fonttools --with skia-pathops python -I tools/test_bdf2ttf.py  # TTF == BDF
 tools/dist.sh inkscreen               # build/inkscreen-VERSION.zip
-uv run --with fonttools --with skia-pathops python -I tools/mkinksans.py  # build/InksansCJK-*.ttc, ~3 min
+uv run --with fonttools --with skia-pathops python -I tools/mkinksans.py  # build/InksansCJK-W{1..8}.ttc, ~15 min
 uv run --with fonttools --with skia-pathops python -I tools/test_mkinksans.py  # checks the OTCs
-tools/dist.sh inksans                 # build/inksans-VERSION.zip
+tools/dist.sh inksans                 # build/inksans-VERSION.zip (all) + -W{1..8}.zip
 uv run --with fonttools python -I tools/mkpreview.py      # docs/inksans-preview.svg
 uv run --with fonttools --with skia-pathops python -I tools/mksite.py  # site/fonts/ for the web
-npx wrangler pages deploy site --project-name caffeine-type          # publish type.caffeine.ink
+wrangler pages deploy site --project-name caffeine-type   # publish type.caffeine.ink (npm i -g wrangler)
 python3 tools/mkcompare.py docs/inkscreen-vs-unifont.png  # hand-tuned vs Unifont
 uvx ruff format tools/*.py && uvx ruff check tools/*.py
 ```
@@ -71,12 +71,20 @@ RFN) for Latin, Greek and Cyrillic. Sources are pinned by URL and
 SHA-256 in `mkinksans.py` and downloaded to `fonts/src/{noto,inter}/`
 (git-ignored). FreeSans is GPL and cannot be merged with an OFL font.
 
-- Weights: Noto wght 340 / 590 (matched to Hiragino Sans W3/W6 by stem
-  width and ink; Hiragino has more stroke contrast, so its W6 falls
-  between Noto 545 by ink and 640 by vertical stems). Inter wght
-  345 / 610 at opsz 14, whose stems match Noto's own Latin at 340/590
-  (and Hiragino's Latin). No scaling: Inter's cap and x-height at 1000
-  units are within 1% of Noto's Latin.
+- Weights W1-W8, matched to Hiragino Sans W1-W8 (`WEIGHTS`): Noto
+  wght 250 315 340 415 490 620 780 900, by the mid-stroke thickness
+  of 一 and 丨 (cross-sections, clear of the flared stroke ends) and
+  the ink of a dozen common characters. They agree within 10 for
+  W2-W5; W1, W6, W7 sit between stems and ink (Hiragino has more
+  contrast). Noto's axis cannot reach W0 (stem 20 vs Noto 100's 30)
+  or W9 (stem ~190 vs Noto 900's 160); W8 at 900 is ~7% short on ink.
+  Inter wght (opsz 14) matches the stem of "I" to Noto's own Latin.
+  No scaling: Inter's cap and x-height at 1000 units are within 1% of
+  Noto's Latin. Version 1.000 was Regular 340 / Bold 590.
+- Names as in Hiragino Sans: legacy family `Inksans CJK <region> W3`
+  with style Regular (so apps that only know Regular/Bold list every
+  weight), typographic family `Inksans CJK <region>` / `W3`,
+  usWeightClass and CSS weight W x 100.
 - Split: Inter supplies the letter blocks (`LETTERS`) and fills gaps
   Noto lacks (never its PUA). Noto keeps `NOTO_ALWAYS` (dashes, curly
   quotes, ellipsis, bopomofo tone marks) and anything it draws full
@@ -102,17 +110,18 @@ SHA-256 in `mkinksans.py` and downloaded to `fonts/src/{noto,inter}/`
   overlapping contours, which some rasterizers (macOS Quick Look)
   fill as holes.
 - `post` is format 3 (no glyph names; 64k names cost 1 MB).
-- Names: `Inksans CJK <region>`, PostScript `InksansCJK<region>-<style>`,
+- Names: `Inksans CJK <region>`, PostScript `InksansCJK<region>-W<n>`,
   vendor `NONE`; "Noto", "Source", "Inter" only in the copyright and
   designer credits.
 
 ## type.caffeine.ink
 
 `site/index.html` (static, no build step) plus `site/fonts/` from
-`tools/mksite.py` (git-ignored, 190 slices / 209 MB). Cloudflare Pages
+`tools/mksite.py` (git-ignored, 760 slices / 840 MB). Cloudflare Pages
 by direct upload from a local build, not git integration, since the
 fonts are not committed. Download buttons point at GitHub Releases
-`<family>-<VERSION>/<family>-<VERSION>.zip`; `site/fonts/versions.js`
+`<family>-<VERSION>/<family>-<VERSION>.zip` (Inksans: that zip holds
+all weights, `inksans-<VERSION>-W<n>.zip` one each); `site/fonts/versions.js`
 carries the versions, so bump `VERSION`, release, rebuild, deploy.
 
 - Inksans slices: rare (2000 code points, one contiguous range each)
@@ -123,6 +132,20 @@ carries the versions, so bump `VERSION`, release, rebuild, deploy.
   costs two downloads and the CSS stays ~30 KB. Exact per-code-point
   ranges made fonts.css 1.5 MB.
 - Slices are TTF (WOFF2 would need brotli; Cloudflare compresses TTF).
+- Never a system font in the preview: faces use `font-display: block`
+  (loading characters stay blank) and each family ends in a "Missing"
+  font: the family's own .notdef (Inksans: Noto's crossed box, the
+  same in every weight; Inkscreen: Unifont's, credited in the name
+  table) mapped to every code point through a format 13 cmap (Adobe
+  Blank technique), with the primary's units and vertical metrics and
+  any weight (no synthesized bold). Characters the font lacks show as
+  that box. Chromium (OTS) accepts the format 13 cmap alone.
+- Download cards share rows through CSS subgrid (5 children each:
+  title, specimen, text, files, download), so their parts and the
+  specimens' baselines line up side by side.
+- macOS's system UI font draws CJK as Hiragino Sans W5 scaled to 92%,
+  so next to system text Inksans (matched to W3) looks lighter. Compare
+  against Hiragino W3 explicitly, not the system font.
   Paths carry the version, so `_headers` caches them as immutable.
 
 Plan 9 bitmap fonts are not all MIT: `luc`, `lucm`, `lucsans`, `pelm`

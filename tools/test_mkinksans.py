@@ -101,11 +101,13 @@ def main():
 
         for region, f in zip(m.REGIONS, faces):
             names = {r.nameID: r.toUnicode() for r in f["name"].names}
-            assert names[1] == f"Inksans CJK {region}" and names[2] == style
+            family = f"Inksans CJK {region}"
+            assert (names[1], names[2]) == (f"{family} {style}", "Regular")
+            assert (names[16], names[17]) == (family, style)
             for nid, s in names.items():
                 # source names only in the copyright and designer credits
                 assert nid in (0, 9) or not {"Noto", "Source", "Inter"} & set(s.split()), (nid, s)
-            assert f["OS/2"].usWeightClass == (700 if style == "Bold" else 400)
+            assert f["OS/2"].usWeightClass == m.WEIGHT_CLASS[style]
 
         # strokes that cross must not leave overlapping contours
         for f in faces:
@@ -129,11 +131,16 @@ def main():
         kern_everywhere(faces[0], jp[ord("A")])
 
         # instanced at the intended weight; rounding the instanced
-        # outlines to integers moves the ink by a few weight units
-        lo, hi = (area(src, "永", {"wght": wght + d}) for d in (-10, 10))
+        # outlines to integers moves the ink by a few weight units. At
+        # the end of the axis the upper bound would clamp to the weight
+        # itself, so it gets 1% of slack instead.
+        def bracket(font, ch, loc, w, k=1):
+            lo, hi = (area(font, ch, loc | {"wght": min(w + d, 900)}) * k * k for d in (-10, 10))
+            return lo, hi * (1.01 if w + 10 > 900 else 1)
+
+        lo, hi = bracket(src, "永", {}, wght)
         assert lo < area(faces[0], "永") < hi, style
-        loc = {"opsz": m.INTER_OPSZ}
-        lo, hi = (area(inter, "n", loc | {"wght": inter_wght + d}) * k * k for d in (-10, 10))
+        lo, hi = bracket(inter, "n", {"opsz": m.INTER_OPSZ}, inter_wght, k)
         assert lo < area(faces[0], "n") < hi, style
         print("ok", path.name)
 

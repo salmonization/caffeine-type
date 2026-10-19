@@ -2,21 +2,25 @@ Inksans CJK
 ===========
 
 A sans-serif font for Chinese, Japanese and Korean from Caffeine Type
-Foundry, in Regular and Bold.
+Foundry, in eight weights, W1 to W8.
 
 Inksans CJK combines two fonts:
 
   - Chinese, Japanese and Korean from Noto Sans CJK (Source Han Sans),
-    at two fixed weights: Regular is Noto's weight 340 and Bold its
-    weight 590, slightly lighter than Noto's own Regular and Bold.
+    at fixed weights on its weight axis:
+
+      W1 250   W2 315   W3 340   W4 415
+      W5 490   W6 620   W7 780   W8 900
   - Latin, Greek and Cyrillic from Inter, at weights that match.
 
 Punctuation that CJK text sets at the width of an ideograph (curly
 quotes, dashes, the ellipsis, the middle dot) stays Noto's. Old Hangul
 jamo do not combine into syllable blocks; modern Hangul is complete.
 
-Each file is a font collection with one face per region, for the
-regional forms of the ideographs:
+Each weight is its own family, as in fonts that use the W1-W9 scale
+("Inksans CJK JP W3"); apps that group by typographic family show
+them as one family with eight styles. Each file is a font collection
+with one face per region, for the regional forms of the ideographs:
 
   Inksans CJK JP   Japanese
   Inksans CJK KR   Korean
@@ -26,9 +30,8 @@ regional forms of the ideographs:
 
 Files
 
-  InksansCJK-Regular.ttc
-  InksansCJK-Bold.ttc
-  OFL.txt          the license
+  InksansCJK-W<n>.ttc   one file per weight
+  OFL.txt               the license
 
 License
 

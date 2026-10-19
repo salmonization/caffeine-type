@@ -33,7 +33,12 @@
   #preview.pixel { line-height: 1.5; -webkit-font-smoothing: none; font-smooth: never; }
   .note { font-size: 12px; color: var(--faint); margin-top: 6px; }
   .fonts { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
-  .card { border: 1px solid var(--line); border-radius: 4px; padding: 14px 16px; }
+  /* the cards share rows (title, specimen, text, files, download), so
+     side by side their parts line up whatever each one's content */
+  .card { border: 1px solid var(--line); border-radius: 4px; padding: 14px 16px;
+          display: grid; grid-row: span 5; grid-template-rows: subgrid; row-gap: 0; align-items: start; }
+  .card > .specimen { align-self: baseline; }
+  .card > :last-child { align-self: end; justify-self: start; margin: 0; }
   .card h3 { font-size: 16px; margin: 0 0 6px; }
   .card .specimen { font-size: 24px; margin: 6px 0 10px; line-height: 1.4; }
   .card ul { margin: 6px 0 12px; padding-left: 18px; color: var(--dim); }
@@ -67,10 +72,7 @@
       </select>
     </label>
     <label>Weight
-      <select id="weight">
-        <option value="400">Regular</option>
-        <option value="700">Bold</option>
-      </select>
+      <select id="weight"></select>
     </label>
     <label>Size
       <input id="size" type="range">
@@ -85,7 +87,7 @@
   <div class="fonts">
     <section class="card">
       <h3>Inkscreen 14</h3>
-      <div class="specimen" style="font-family: Inkscreen; font-size: 32px">Hamburgefonstiv</div>
+      <div class="specimen" style="font-family: Inkscreen, 'Inkscreen Missing'; font-size: 32px">Hamburgefonstiv</div>
       <p>A bitmap screen font in Regular and Bold, based on GNU Unifont. Its Latin fitted into
         14 rows of an 8x16 cell. Certain glyph details have been hand-refined. Sharp at 16 px and multiples.</p>
       <ul>
@@ -97,15 +99,17 @@
     </section>
     <section class="card">
       <h3>Inksans CJK</h3>
-      <div class="specimen" style="font-family: 'Inksans CJK SC'" lang="zh-Hans">永 Aa 字体 かな</div>
-      <p>A sans-serif for Chinese, Japanese and Korean, in Regular and Bold. Noto Sans CJK at two
-        fixed weights (340 & 590) with Latin, Greek and Cyrillic from Inter.</p>
+      <div class="specimen" id="sans-specimen" style="font-family: 'Inksans CJK SC', 'Inksans Missing'" lang="zh-Hans"></div>
+      <p>A sans-serif for Chinese, Japanese and Korean, in eight weights from W1 to W8. Noto Sans
+        CJK at fixed weights with Latin, Greek and Cyrillic from Inter.</p>
       <ul>
-        <li><code>InksansCJK-Regular.ttc</code></li>
-        <li><code>InksansCJK-Bold.ttc</code></li>
+        <li><code id="sans-files"></code></li>
         <li><code>OFL.txt</code>, <code>README.txt</code></li>
       </ul>
-      <a class="button" data-family="inksans">Download</a>
+      <div class="row">
+        <label>Weight <select id="sans-weight"><option value="all">All</option></select></label>
+        <a class="button" id="sans-download"></a>
+      </div>
     </section>
   </div>
 
@@ -131,6 +135,13 @@ The quick brown fox jumps over the lazy dog. 0123456789
 sun3% ls -l /usr/bin | grep cc`,
   };
 
+  // [label, CSS font-weight]; Inksans W1-W8 are weights 100-800
+  const WEIGHTS = {
+    inksans: ["W1", "W2", "W3", "W4", "W5", "W6", "W7", "W8"].map((w, i) => [w, (i + 1) * 100]),
+    inkscreen: [["Regular", 400], ["Bold", 700]],
+  };
+  const DEFAULT_WEIGHT = { inksans: 300, inkscreen: 400 };
+
   // Inkscreen is drawn on a 16 px grid: only multiples stay sharp
   const SIZES = {
     inksans: { min: 12, max: 96, step: 1, value: 16 },
@@ -142,6 +153,8 @@ sun3% ls -l /usr/bin | grep cc`,
     const s = SIZES[font];
     Object.assign($("size"), { min: s.min, max: s.max, step: s.step });
     if (!keepSize) $("size").value = s.value;
+    $("weight").replaceChildren(...WEIGHTS[font].map(([label, value]) => new Option(label, value)));
+    $("weight").value = DEFAULT_WEIGHT[font];
     // swap the sample unless the visitor has typed their own
     if (Object.values(SAMPLES).includes($("text").value) || !$("text").value)
       $("text").value = SAMPLES[font];
@@ -152,24 +165,58 @@ sun3% ls -l /usr/bin | grep cc`,
   function update() {
     const font = $("font").value;
     const region = $("region").selectedOptions[0];
-    preview.style.fontFamily = font === "inksans" ? `"Inksans CJK ${region.value}"` : "Inkscreen";
+    // never a system font: characters still loading stay blank (font-display:
+    // block), characters the font lacks show its "?" (the Missing fonts)
+    preview.style.fontFamily = font === "inksans"
+      ? `"Inksans CJK ${region.value}", "Inksans Missing"`
+      : `Inkscreen, "Inkscreen Missing"`;
     preview.lang = font === "inksans" ? region.dataset.lang : "en";
     preview.style.fontWeight = $("weight").value;
     preview.style.fontSize = `${$("size").value}px`;
     preview.classList.toggle("pixel", font === "inkscreen");
     preview.textContent = $("text").value;
     $("size-out").textContent = `${$("size").value} px`;
-    $("note").textContent = font === "inksans"
-      ? "Characters load in slices as you type. The region picks the regional forms of the ideographs."
-      : "Inkscreen only supports ASCII and Latin-1. So other characters will fall back to your system fonts.";
+    // the box is the Missing font's glyph; U+E000 is in no font of ours
+    const box = `<span style="font-family: '${font === "inksans" ? "Inksans" : "Inkscreen"} Missing'">\uE000</span>`;
+    $("note").innerHTML = font === "inksans"
+      ? `Characters load in slices as you type. The region picks the regional forms of the ideographs. Characters the font lacks show as ${box}.`
+      : `Inkscreen only supports ASCII and Latin-1. Characters the font lacks show as ${box}.`;
   }
 
-  for (const a of document.querySelectorAll("a[data-family]")) {
-    const family = a.dataset.family;
-    const version = window.VERSIONS?.[family];
-    a.href = `${RELEASES}/${family}-${version}/${family}-${version}.zip`;
-    a.textContent = `Download ${version} (zip)`;
+  const screenVersion = window.VERSIONS?.inkscreen;
+  const screenLink = document.querySelector('a[data-family="inkscreen"]');
+  screenLink.href = `${RELEASES}/inkscreen-${screenVersion}/inkscreen-${screenVersion}.zip`;
+  screenLink.textContent = `Download ${screenVersion} (zip)`;
+
+  // Inksans: one zip with every weight, or one per weight
+  const sansVersion = window.VERSIONS?.inksans;
+  function updateSansDownload() {
+    const w = $("sans-weight").value;
+    const all = w === "all";
+    const specimen = $("sans-specimen");
+    if (all) {
+      specimen.replaceChildren(...WEIGHTS.inksans.map(([, weight]) => {
+        const span = document.createElement("span");
+        span.textContent = "永";
+        span.style.fontWeight = weight;
+        return span;
+      }));
+    } else {
+      specimen.textContent = "永 Aa 字体 かな";
+      specimen.style.fontWeight = $("sans-weight").selectedOptions[0].dataset.weight;
+    }
+    $("sans-files").textContent = all ? "InksansCJK-W1.ttc … InksansCJK-W8.ttc" : `InksansCJK-${w}.ttc`;
+    const name = all ? `inksans-${sansVersion}` : `inksans-${sansVersion}-${w}`;
+    $("sans-download").href = `${RELEASES}/inksans-${sansVersion}/${name}.zip`;
+    $("sans-download").textContent = `Download ${sansVersion} (zip)`;
   }
+  for (const [w, weight] of WEIGHTS.inksans) {
+    const option = new Option(w, w);
+    option.dataset.weight = weight;
+    $("sans-weight").append(option);
+  }
+  $("sans-weight").onchange = updateSansDownload;
+  updateSansDownload();
   $("font").onchange = () => setFont(false);
   for (const id of ["region", "weight", "size", "text"]) $(id).oninput = update;
   setFont(false);

@@ -1,6 +1,6 @@
 """Build the web fonts for type.caffeine.ink into site/fonts/.
 
-Inksans CJK is 22 MB per weight, so each regional face is cut into
+Inksans CJK is 22 MB per weight (W1-W8, CSS font-weight 100-800), so each regional face is cut into
 slices with CSS unicode-range; the browser fetches only the slices the
 text uses. Three kinds, declared in this order:
 
@@ -15,6 +15,14 @@ Where ranges overlap, the browser tries the face declared last first
 and falls back to earlier ones when the glyph is missing. So ordinary
 text costs two downloads (base, common), a rare character one more,
 and every range stays a single span: the stylesheet stays small.
+
+Faces use font-display: block, so characters whose slice is still
+loading stay blank instead of flashing a system font. Each family is
+followed by a "Missing" font whose one glyph is the family's own
+.notdef (Noto's crossed box, the same in every weight; Unifont's for
+Inkscreen), mapped to every code point through a format 13 cmap (the
+Adobe Blank technique): a character the font lacks shows as that box,
+never in a system font.
 
 Slices stay TTF: WOFF2 needs the brotli module, and Cloudflare
 compresses font/ttf on the wire anyway. Paths carry the version, so
@@ -31,7 +39,11 @@ from multiprocessing import Pool
 from pathlib import Path
 
 from fontTools import subset
+from fontTools.fontBuilder import FontBuilder
+from fontTools.pens.ttGlyphPen import TTGlyphPen
 from fontTools.ttLib import TTFont
+from fontTools.ttLib.removeOverlaps import removeOverlaps
+from fontTools.ttLib.tables._c_m_a_p import CmapSubtable
 
 sys.path.insert(0, str(Path(__file__).parent))
 import bdf2ttf
@@ -41,7 +53,6 @@ import mkinkscreen
 ROOT = Path(__file__).resolve().parent.parent
 SITE = ROOT / "site"
 OUT = SITE / "fonts"
-STYLES = {"Regular": 400, "Bold": 700}
 RARE_SLICE = 2000
 
 # lead bytes of the frequent rows in each legacy double-byte charset
@@ -99,6 +110,86 @@ def cut(job):
     return path.stat().st_size
 
 
+# Unifont's .notdef (an inverted "?" in a box), rows 10..0 above the
+# baseline, 8 px wide in its 16 px em
+NOTDEF = """
+.######.
+.##..##.
+.#.##.#.
+.#.##.#.
+.####.#.
+.###.##.
+.###.##.
+.######.
+.###.##.
+.###.##.
+.######.
+"""
+
+
+def missing_font(path, family, primary, glyph, advance, copyright):
+    """glyph mapped to every code point (see above), in the units and
+    vertical metrics of the primary font, so the fallback never
+    changes the line box."""
+    fb = FontBuilder(primary["head"].unitsPerEm, isTTF=True)
+    fb.setupGlyphOrder([".notdef", "missing"])
+    fb.setupCharacterMap({})
+    fb.setupGlyf({".notdef": TTGlyphPen(None).glyph(), "missing": glyph})
+    # TrueType places outlines by the lsb, so it must equal xMin
+    glyph.recalcBounds(None)
+    fb.setupHorizontalMetrics({".notdef": (advance, 0), "missing": (advance, glyph.xMin)})
+    hhea, os2 = primary["hhea"], primary["OS/2"]
+    fb.setupHorizontalHeader(ascent=hhea.ascent, descent=hhea.descent, lineGap=hhea.lineGap)
+    fb.setupOS2(
+        sTypoAscender=os2.sTypoAscender,
+        sTypoDescender=os2.sTypoDescender,
+        sTypoLineGap=os2.sTypoLineGap,
+        usWinAscent=os2.usWinAscent,
+        usWinDescent=os2.usWinDescent,
+        fsSelection=os2.fsSelection,
+    )
+    fb.setupNameTable(
+        {
+            "familyName": family,
+            "styleName": "Regular",
+            "copyright": copyright,
+            "licenseDescription": "SIL Open Font License, Version 1.1",
+        }
+    )
+    fb.setupPost()
+    # a format 13 subtable maps whole ranges to one glyph in a few bytes;
+    # planes 0-3 cover everything a visitor can type, minus surrogates
+    table = CmapSubtable.newSubtable(13)
+    table.platformID, table.platEncID, table.language = 3, 10, 0
+    table.cmap = {cp: "missing" for cp in range(0x20, 0x40000) if not 0xD800 <= cp <= 0xDFFF}
+    fb.font["cmap"].tables = [table]
+    removeOverlaps(fb.font)
+    fb.save(path)
+
+
+def noto_notdef(primary):
+    gs = primary.getGlyphSet()
+    pen = TTGlyphPen(gs)
+    gs[".notdef"].draw(pen)
+    return pen.glyph(), primary["hmtx"][".notdef"][0]
+
+
+def unifont_notdef():
+    rows = NOTDEF.split()
+    pixels = [
+        (x, len(rows) - 1 - y) for y, r in enumerate(rows) for x, c in enumerate(r) if c == "#"
+    ]
+    return bdf2ttf.draw(pixels), 8 * bdf2ttf.PIXEL_UNITS
+
+
+def face(family, url, weight="400", ranges=None):
+    rule = (
+        f'@font-face {{ font-family: "{family}"; font-weight: {weight}; '
+        f'font-display: block; src: url("{url}") format("truetype");'
+    )
+    return rule + (f" unicode-range: {ranges}; }}" if ranges else " }")
+
+
 def main():
     if OUT.exists():
         shutil.rmtree(OUT)
@@ -108,19 +199,14 @@ def main():
     screen_dir.mkdir(parents=True)
 
     css, jobs = [], []
-    for style, weight in STYLES.items():
+    for style, weight in mkinksans.WEIGHT_CLASS.items():
         ttc = mkinksans.OUT / f"InksansCJK-{style}.ttc"
         for index, region in enumerate(mkinksans.REGIONS):
             cmap = TTFont(ttc, fontNumber=index, lazy=True).getBestCmap()
             for k, (cps, ranges) in enumerate(slices(set(cmap))):
                 name = f"{style}-{region}-{k:02d}.ttf"
                 jobs.append((ttc, index, cps, sans_dir / name))
-                css.append(
-                    f'@font-face {{ font-family: "Inksans CJK {region}"; '
-                    f"font-weight: {weight}; font-display: swap; "
-                    f'src: url("{sans_dir.name}/{name}") format("truetype"); '
-                    f"unicode-range: {ranges}; }}"
-                )
+                css.append(face(f"Inksans CJK {region}", f"{sans_dir.name}/{name}", weight, ranges))
     with Pool(os.cpu_count()) as pool:
         sizes = pool.map(cut, jobs)
     print(
@@ -130,10 +216,18 @@ def main():
     for bdf, weight in (("inkscreen14.bdf", 400), ("inkscreen14b.bdf", 700)):
         bdf2ttf.convert(str(ROOT / "fonts" / bdf), screen_dir)
         name = Path(bdf).with_suffix(".ttf").name
-        css.append(
-            f'@font-face {{ font-family: "Inkscreen"; font-weight: {weight}; '
-            f'src: url("{screen_dir.name}/{name}") format("truetype"); }}'
-        )
+        css.append(face("Inkscreen", f"{screen_dir.name}/{name}", weight))
+
+    sans = TTFont(mkinksans.OUT / "InksansCJK-W3.ttc", fontNumber=0)
+    screen = TTFont(screen_dir / "inkscreen14.ttf")
+    unifont = "Glyph from GNU Unifont, Copyright (C) 1998-2026 Roman Czyborra, Paul Hardy, et al."
+    for family, primary, (glyph, advance), copyright, folder in (
+        ("Inksans Missing", sans, noto_notdef(sans), mkinksans.COPYRIGHT, sans_dir),
+        ("Inkscreen Missing", screen, unifont_notdef(), unifont, screen_dir),
+    ):
+        missing_font(folder / "missing.ttf", family, primary, glyph, advance, copyright)
+        # any weight: a bold run must not get a synthesized, smeared box
+        css.append(face(family, f"{folder.name}/missing.ttf", "100 900"))
 
     (OUT / "fonts.css").write_text("\n".join(css) + "\n")
     (OUT / "versions.js").write_text(

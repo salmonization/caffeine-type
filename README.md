@@ -24,15 +24,14 @@ The glyphs changed by hand, next to Unifont:
 
 ## Inksans CJK
 
-A sans-serif font for Chinese, Japanese and Korean in Regular and
-Bold: Noto Sans CJK at two fixed weights (Noto's 340 and 590, a little
-lighter than its own Regular and Bold) with Latin, Greek and Cyrillic
-from Inter. Each weight is one font collection with five regional
-faces: JP, KR, SC, TC, HK.
+A sans-serif font for Chinese, Japanese and Korean in eight weights,
+W1 to W8: Noto Sans CJK at fixed weights matched to the W scale of
+Japanese type, with Latin, Greek and Cyrillic from Inter. Each weight
+is one font collection with five regional faces: JP, KR, SC, TC, HK.
 
-![Inksans CJK Regular and Bold](docs/inksans-preview.svg)
+![Inksans CJK W1 to W8](docs/inksans-preview.svg)
 
-- `tools/mkinksans.py` - builds `build/InksansCJK-{Regular,Bold}.ttc`
+- `tools/mkinksans.py` - builds `build/InksansCJK-W{1..8}.ttc`
   from the variable Noto Sans CJK and Inter (downloaded and checked on
   first run)
 - `tools/mkpreview.py` - the preview image above

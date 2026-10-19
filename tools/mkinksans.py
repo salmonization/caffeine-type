@@ -1,11 +1,10 @@
-"""Build Inksans CJK (Regular, Bold): Noto Sans CJK with Inter's Latin.
+"""Build Inksans CJK (W1-W8): Noto Sans CJK with Inter's Latin.
 
 CJK comes from Noto Sans CJK at fixed weights matched to the darkness
-of Hiragino Sans W3/W6 (stem width and ink coverage): wght 340 for
-Regular, 590 for Bold. Latin, Greek and Cyrillic come from Inter (opsz
-14), at the weight whose stems match Noto's own Latin at those
-weights (345, 610). Inter needs no scaling: its cap height and
-x-height at 1000 units are within 1% of Noto's Latin.
+of Hiragino Sans W1-W8 (see WEIGHTS). Latin, Greek and Cyrillic come
+from Inter (opsz 14), at the weight whose stems match Noto's own Latin
+at each weight. Inter needs no scaling: its cap height and x-height
+at 1000 units are within 1% of Noto's Latin.
 
 Each weight is one OTC with the five regional faces (JP, KR, SC, TC,
 HK). As in Noto, the faces share one set of outlines and metrics;
@@ -56,9 +55,25 @@ SOURCES = {
     ),
 }
 
-VERSION = "1.000"
+VERSION = "2.000"
 REGIONS = ["JP", "KR", "SC", "TC", "HK"]  # face order in the source OTC
-WEIGHTS = {"Regular": (340, 345), "Bold": (590, 610)}  # (Noto wght, Inter wght)
+# (Noto wght, Inter wght) per Hiragino Sans weight. Noto is matched by
+# the mid-stroke thickness of 一 and 丨 and the ink of a dozen common
+# characters; where those disagree (Hiragino has more stroke contrast
+# at W1, W6, W7) the weight sits between them. Inter is matched by the
+# stem of "I" against Noto's own Latin. Noto's axis (100-900) is too
+# heavy for W0 and too light for W9; W8 at 900 is ~7% short on ink.
+WEIGHTS = {
+    "W1": (250, 235),
+    "W2": (315, 290),
+    "W3": (340, 335),
+    "W4": (415, 415),
+    "W5": (490, 515),
+    "W6": (620, 625),
+    "W7": (780, 750),
+    "W8": (900, 825),
+}
+WEIGHT_CLASS = {style: 100 * int(style[1:]) for style in WEIGHTS}  # W3 -> 300, as Hiragino
 INTER_OPSZ = 14
 
 # blocks whose code points Inter supplies where it has them
@@ -227,32 +242,37 @@ def build_inter(wght, cps, noto):
 
 
 def rename(font, region, style):
+    """Names as in Hiragino Sans: each weight is its own legacy family
+    (style Regular), so apps that only know Regular and Bold still list
+    all eight; the typographic family (16, 17) groups them."""
     family = f"Inksans CJK {region}"
+    legacy = f"{family} {style}"
     ps = f"InksansCJK{region.lower()}-{style}"
     designer = font["name"].getDebugName(9)
     name = font["name"]
     name.names = []
     for nid, s in (
         (0, COPYRIGHT),
-        (1, family),
-        (2, style),
+        (1, legacy),
+        (2, "Regular"),
         (3, f"{VERSION};NONE;{ps}"),
-        (4, f"{family} {style}"),
+        (4, legacy),
         (5, f"Version {VERSION}"),
         (6, ps),
         (8, "Caffeine Type Foundry"),
         (9, f"{designer}; Rasmus Andersson (Inter)"),
         (13, LICENSE),
         (14, "https://openfontlicense.org"),
+        (16, family),
+        (17, style),
     ):
         name.setName(s, nid, 3, 1, 0x409)
 
-    bold = style == "Bold"
     os2 = font["OS/2"]
-    os2.usWeightClass = 700 if bold else 400
+    os2.usWeightClass = WEIGHT_CLASS[style]
     os2.achVendID = "NONE"
-    os2.fsSelection = os2.fsSelection & ~0x61 | (0x20 if bold else 0x40)
-    font["head"].macStyle = 1 if bold else 0
+    os2.fsSelection = os2.fsSelection & ~0x61 | 0x40  # REGULAR
+    font["head"].macStyle = 0
     font["head"].fontRevision = float(VERSION)
 
 
