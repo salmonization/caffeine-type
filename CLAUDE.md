@@ -17,6 +17,7 @@ uv run --with fonttools --with skia-pathops python -I tools/mkinksans.py  # buil
 uv run --with fonttools --with skia-pathops python -I tools/test_mkinksans.py  # checks the OTCs
 tools/dist.sh inksans                 # build/inksans-VERSION.zip (all) + -W{1..8}.zip
 uv run --with fonttools python -I tools/mkpreview.py      # docs/inksans-preview.svg
+uv run --with fonttools --with skia-pathops python -I tools/measureweights.py  # Hiragino vs Noto wght table (macOS)
 uv run --with fonttools --with skia-pathops python -I tools/mksite.py  # site/fonts/ for the web
 wrangler pages deploy site --project-name caffeine-type   # publish type.caffeine.ink (npm i -g wrangler)
 python3 tools/mkcompare.py docs/inkscreen-vs-unifont.png  # hand-tuned vs Unifont
@@ -71,7 +72,9 @@ RFN) for Latin, Greek and Cyrillic. Sources are pinned by URL and
 SHA-256 in `mkinksans.py` and downloaded to `fonts/src/{noto,inter}/`
 (git-ignored). FreeSans is GPL and cannot be merged with an OFL font.
 
-- Weights W1-W8, matched to Hiragino Sans W1-W8 (`WEIGHTS`): Noto
+- Weights W1-W8, matched to Hiragino Sans W1-W8 (`WEIGHTS`; full
+  table in `docs/inksans-weights.md`, from `tools/measureweights.py`;
+  public text names Hiragino with the SCREEN trademark line): Noto
   wght 250 315 340 415 490 620 780 900, by the mid-stroke thickness
   of 一 and 丨 (cross-sections, clear of the flared stroke ends) and
   the ink of a dozen common characters. They agree within 10 for

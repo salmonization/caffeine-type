@@ -63,6 +63,7 @@ REGIONS = ["JP", "KR", "SC", "TC", "HK"]  # face order in the source OTC
 # at W1, W6, W7) the weight sits between them. Inter is matched by the
 # stem of "I" against Noto's own Latin. Noto's axis (100-900) is too
 # heavy for W0 and too light for W9; W8 at 900 is ~7% short on ink.
+# The measurements: docs/inksans-weights.md (tools/measureweights.py).
 WEIGHTS = {
     "W1": (250, 235),
     "W2": (315, 290),

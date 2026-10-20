@@ -41,7 +41,7 @@
   .card > :last-child { align-self: end; justify-self: start; margin: 0; }
   .card h3 { font-size: 16px; margin: 0 0 6px; }
   .card .specimen { font-size: 24px; margin: 6px 0 10px; line-height: 1.4; }
-  .card ul { margin: 6px 0 12px; padding-left: 18px; color: var(--dim); }
+  .card ul { margin: 6px 0 18px; padding-left: 18px; color: var(--dim); }
   .card code { font: 12px ui-monospace, monospace; }
   a.button { display: inline-block; padding: 5px 12px; border-radius: 4px; text-decoration: none;
              background: var(--accent); color: #fff; }
@@ -58,8 +58,8 @@
   <div class="row">
     <label>Font
       <select id="font">
-        <option value="inkscreen">Inkscreen 14</option>
         <option value="inksans">Inksans CJK</option>
+        <option value="inkscreen">Inkscreen 14</option>
       </select>
     </label>
     <label id="region-box">Region
@@ -86,6 +86,21 @@
   <h2>Download</h2>
   <div class="fonts">
     <section class="card">
+      <h3>Inksans CJK</h3>
+      <div class="specimen" id="sans-specimen" style="font-family: 'Inksans CJK SC', 'Inksans Missing'" lang="zh-Hans"></div>
+      <p>A sans-serif for Chinese, Japanese and Korean, based on Noto Sans CJK, with Latin,
+        Greek and Cyrillic from Inter. Its eight weights, W1 to W8, match the stroke weights of
+        Hiragino Sans.</p>
+      <ul>
+        <li><code id="sans-files"></code></li>
+        <li><code>OFL.txt</code>, <code>README.txt</code></li>
+      </ul>
+      <div class="row">
+        <label>Weight <select id="sans-weight"><option value="all">All</option></select></label>
+        <a class="button" id="sans-download"></a>
+      </div>
+    </section>
+    <section class="card">
       <h3>Inkscreen 14</h3>
       <div class="specimen" style="font-family: Inkscreen, 'Inkscreen Missing'; font-size: 32px">Hamburgefonstiv</div>
       <p>A bitmap screen font in Regular and Bold, based on GNU Unifont. Its Latin fitted into
@@ -97,25 +112,11 @@
       </ul>
       <a class="button" data-family="inkscreen">Download</a>
     </section>
-    <section class="card">
-      <h3>Inksans CJK</h3>
-      <div class="specimen" id="sans-specimen" style="font-family: 'Inksans CJK SC', 'Inksans Missing'" lang="zh-Hans"></div>
-      <p>A sans-serif for Chinese, Japanese and Korean, in eight weights from W1 to W8. Noto Sans
-        CJK at fixed weights with Latin, Greek and Cyrillic from Inter.</p>
-      <ul>
-        <li><code id="sans-files"></code></li>
-        <li><code>OFL.txt</code>, <code>README.txt</code></li>
-      </ul>
-      <div class="row">
-        <label>Weight <select id="sans-weight"><option value="all">All</option></select></label>
-        <a class="button" id="sans-download"></a>
-      </div>
-    </section>
   </div>
-
   <footer>
     Source and all releases:
-    <a href="https://github.com/salmonization/caffeine-type">salmonization/caffeine-type</a>
+    <a href="https://github.com/salmonization/caffeine-type">salmonization/caffeine-type</a>.
+    Hiragino is a trademark of SCREEN Holdings Co., Ltd.
   </footer>
 </main>
 <script>
@@ -205,7 +206,7 @@ sun3% ls -l /usr/bin | grep cc`,
       specimen.textContent = "永 Aa 字体 かな";
       specimen.style.fontWeight = $("sans-weight").selectedOptions[0].dataset.weight;
     }
-    $("sans-files").textContent = all ? "InksansCJK-W1.ttc … InksansCJK-W8.ttc" : `InksansCJK-${w}.ttc`;
+    $("sans-files").textContent = all ? "InksansCJK-W1.ttc — InksansCJK-W8.ttc" : `InksansCJK-${w}.ttc`;
     const name = all ? `inksans-${sansVersion}` : `inksans-${sansVersion}-${w}`;
     $("sans-download").href = `${RELEASES}/inksans-${sansVersion}/${name}.zip`;
     $("sans-download").textContent = `Download ${sansVersion} (zip)`;

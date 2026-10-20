@@ -2,7 +2,10 @@ Inksans CJK
 ===========
 
 A sans-serif font for Chinese, Japanese and Korean from Caffeine Type
-Foundry, in eight weights, W1 to W8.
+Foundry. The eight weights, W1 to W8, match the stroke weights of
+Hiragino Sans W1 to W8. The Regular weight of Noto Sans CJK is close
+to W4, and its Bold weight is between W6 and W7. Inksans gives the
+Hiragino weights on systems that do not have Hiragino.
 
 Inksans CJK combines two fonts:
 
@@ -15,12 +18,13 @@ Inksans CJK combines two fonts:
 
 Punctuation that CJK text sets at the width of an ideograph (curly
 quotes, dashes, the ellipsis, the middle dot) stays Noto's. Old Hangul
-jamo do not combine into syllable blocks; modern Hangul is complete.
+jamo do not combine into syllable blocks. Modern Hangul is complete.
 
-Each weight is its own family, as in fonts that use the W1-W9 scale
-("Inksans CJK JP W3"); apps that group by typographic family show
-them as one family with eight styles. Each file is a font collection
-with one face per region, for the regional forms of the ideographs:
+Each weight is its own family ("Inksans CJK JP W3"), as in fonts that
+use the W1-W9 scale. Apps that group by typographic family show the
+weights as one family with eight styles. Each file is a font
+collection with one face per region, for the regional forms of the
+ideographs:
 
   Inksans CJK JP   Japanese
   Inksans CJK KR   Korean
@@ -42,3 +46,8 @@ Copyright 2026 Caffeine Type Foundry.
 
 This Font Software is licensed under the SIL Open Font License,
 Version 1.1. See OFL.txt or https://openfontlicense.org
+
+Hiragino is a trademark of SCREEN Holdings Co., Ltd. Inksans CJK
+contains no Hiragino outlines. We only measured the weights of
+Hiragino Sans. The measurements are at
+https://github.com/salmonization/caffeine-type/blob/main/docs/inksans-weights.md
